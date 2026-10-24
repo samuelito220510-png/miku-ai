@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --c-accent: 57 230 209;
+    --c-accent2: 0 207 200;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-bg text-soft font-sans antialiased;
+    overflow: hidden;
+  }
+  ::selection {
+    background: rgb(var(--c-accent) / 0.3);
+    color: #fff;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-image:
+      linear-gradient(rgb(var(--c-accent) / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--c-accent) / 0.045) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
+  .glass {
+    @apply border border-line/70 bg-panel/70 backdrop-blur-xl;
+  }
+  .text-glow {
+    text-shadow: 0 0 20px rgb(var(--c-accent) / 0.45);
+  }
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #253447 transparent;
+  }
+  .scroll-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroll-thin::-webkit-scrollbar-thumb {
+    background: #1d2b3e;
+    border-radius: 99px;
+  }
+  .scroll-thin::-webkit-scrollbar-thumb:hover {
+    background: #2b3e57;
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+@keyframes ringPulse {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+.animate-floaty {
+  animation: floaty 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-floaty {
+    animation: none;
+  }
+}
