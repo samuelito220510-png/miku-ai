@@ -1,3 +1,6 @@
+// Respeta el base de Vite (funciona en localhost y en GitHub Pages).
+const MIKU_SRC = import.meta.env.BASE_URL + 'miku.png'
+
 interface Props {
   size?: number
   variant?: 'circle' | 'bare'
@@ -13,7 +16,7 @@ export function MikuAvatar({ size = 40, variant = 'circle', className = '', glow
   if (variant === 'bare') {
     return (
       <img
-        src="/miku.png"
+        src={MIKU_SRC}
         alt="Hatsune Miku"
         draggable={false}
         className={'select-none ' + className}
@@ -25,7 +28,7 @@ export function MikuAvatar({ size = 40, variant = 'circle', className = '', glow
       {glow && <span className="pointer-events-none absolute inset-0 rounded-full bg-miku/25 blur-md" />}
       <div className="relative h-full w-full overflow-hidden rounded-full bg-panel2 ring-1 ring-miku/40">
         <img
-          src="/miku.png"
+          src={MIKU_SRC}
           alt="Hatsune Miku"
           draggable={false}
           className="absolute left-1/2 max-w-none -translate-x-1/2 select-none"
