@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, Info, PanelLeftOpen, Check } from 'lucide-react'
+import { ChevronDown, Info, PanelLeftOpen, Check, Phone } from 'lucide-react'
 import { MikuAvatar } from './MikuAvatar'
 import type { Personality } from '../types'
 
@@ -11,6 +11,7 @@ interface Props {
   activePersonality: Personality
   onChangePersonality: (id: string) => void
   onOpenPanel: () => void
+  onCall: () => void
 }
 
 export function TopBar({
@@ -20,6 +21,7 @@ export function TopBar({
   activePersonality,
   onChangePersonality,
   onOpenPanel,
+  onCall,
 }: Props) {
   const [open, setOpen] = useState(false)
 
@@ -94,6 +96,15 @@ export function TopBar({
             )}
           </AnimatePresence>
         </div>
+
+        <button
+          onClick={onCall}
+          className="flex h-9 items-center gap-1.5 rounded-xl border border-miku/40 bg-miku/10 px-3 text-sm font-medium text-miku transition-colors hover:bg-miku/20"
+          title="Llamar a Miku"
+        >
+          <Phone size={16} />
+          <span className="hidden sm:inline">Llamar</span>
+        </button>
 
         <button
           onClick={onOpenPanel}
