@@ -31,6 +31,9 @@ function stripForSpeech(t: string): string {
     .trim()
 }
 
+// URL de tu Cloudflare Worker (proxy de la voz de Miku vía Fish Audio)
+const MIKU_VOICE_URL = 'https://little-field-c2f4.smesa2205.workers.dev/'
+
 export default function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [chats, setChats] = useState<Conversation[]>(() => loadChats())
@@ -45,6 +48,7 @@ export default function App() {
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const recogRef = useRef<any>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const voiceAvailable =
     typeof window !== 'undefined' &&
     !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
@@ -62,11 +66,10 @@ export default function App() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, thinking])
 
-  const speak = useCallback(
-    (text: string) => {
-      if (!prefs.voice || !('speechSynthesis' in window)) return
-      const clean = stripForSpeech(text)
-      if (!clean) return
+  // Respaldo: voz del navegador si el Worker falla.
+  const browserSpeak = useCallback(
+    (clean: string) => {
+      if (!('speechSynthesis' in window)) return
       speechSynthesis.cancel()
       const u = new SpeechSynthesisUtterance(clean)
       const vs = speechSynthesis.getVoices()
@@ -78,7 +81,39 @@ export default function App() {
       u.rate = 1.05
       speechSynthesis.speak(u)
     },
-    [prefs.voice, pitch],
+    [pitch],
+  )
+
+  // Voz real de Miku (Fish Audio a través del Cloudflare Worker).
+  const speak = useCallback(
+    async (text: string) => {
+      if (!prefs.voice) return
+      const clean = stripForSpeech(text)
+      if (!clean) return
+      try {
+        audioRef.current?.pause()
+      } catch {
+        /* noop */
+      }
+      if ('speechSynthesis' in window) speechSynthesis.cancel()
+      try {
+        const res = await fetch(MIKU_VOICE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: clean.slice(0, 500) }),
+        })
+        if (!res.ok) throw new Error('voz ' + res.status)
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        const audio = new Audio(url)
+        audioRef.current = audio
+        audio.onended = () => URL.revokeObjectURL(url)
+        await audio.play()
+      } catch {
+        browserSpeak(clean)
+      }
+    },
+    [prefs.voice, browserSpeak],
   )
 
   const appendTo = (id: string, msg: Message) =>
@@ -190,6 +225,11 @@ export default function App() {
 
   const newChat = () => {
     setActiveId(null)
+    try {
+      audioRef.current?.pause()
+    } catch {
+      /* noop */
+    }
     if ('speechSynthesis' in window) speechSynthesis.cancel()
   }
 
