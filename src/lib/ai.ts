@@ -1,9 +1,11 @@
 import type { Message } from '../types'
 
-// --- Configuración de IA integrada en el código ---
-// (OpenRouter, modelo gratis). Para uso personal; no publiques la clave.
-const API_KEY = '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'
-const MODEL = 'openrouter/free'
+// --- Configuración de IA (Groq) ---
+// La clave NO se escribe en el código: se inyecta por variable de entorno.
+//   · Local  → archivo .env.local (VITE_GROQ_KEY=...)
+//   · GitHub Pages → secreto del repositorio GROQ_KEY (lo usa el workflow)
+const API_KEY = (import.meta.env.VITE_GROQ_KEY as string) || ''
+const MODEL = 'openai/gpt-oss-120b'
 
 export const BASE_SYSTEM =
   'Eres Hatsune Miku, la diva virtual. Hablas en español de forma natural, dulce y con energía positiva. ' +
@@ -20,17 +22,21 @@ export async function askMiku(
     ...history.map((h) => ({ role: h.role, content: h.content })),
     { role: 'user', content: text },
   ]
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: 'Bearer ' + API_KEY,
-      'HTTP-Referer': typeof location !== 'undefined' ? location.origin : 'http://localhost',
-      'X-Title': 'MIKU AI',
     },
-    body: JSON.stringify({ model: MODEL, messages, temperature: 0.9, max_tokens: 1500 }),
+    body: JSON.stringify({
+      model: MODEL,
+      messages,
+      temperature: 0.9,
+      max_tokens: 800,
+      reasoning_effort: 'low',
+    }),
   })
-  if (!res.ok) throw new Error('OpenRouter ' + res.status + ': ' + (await res.text()).slice(0, 180))
+  if (!res.ok) throw new Error('Groq ' + res.status + ': ' + (await res.text()).slice(0, 180))
   const data = await res.json()
   const msg = data?.choices?.[0]?.message
   const reply = (msg?.content || '').trim() || (msg?.reasoning || '').trim()
