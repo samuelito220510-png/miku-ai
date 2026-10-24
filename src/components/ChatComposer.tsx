@@ -94,7 +94,7 @@ export function ChatComposer({
           </button>
         </div>
         <p className="mt-2 text-center text-xs text-muted/70">
-          Miku AI puede cometer errores. Verifica la información importante.
+          para que sepas siempre que te amo princesa y para que me tengas para siempre en tu corazon
         </p>
       </div>
     </div>
