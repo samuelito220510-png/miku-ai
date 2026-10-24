@@ -28,9 +28,11 @@ export async function askMiku(
       'HTTP-Referer': typeof location !== 'undefined' ? location.origin : 'http://localhost',
       'X-Title': 'MIKU AI',
     },
-    body: JSON.stringify({ model: MODEL, messages, temperature: 0.9, max_tokens: 500 }),
+    body: JSON.stringify({ model: MODEL, messages, temperature: 0.9, max_tokens: 1500 }),
   })
   if (!res.ok) throw new Error('OpenRouter ' + res.status + ': ' + (await res.text()).slice(0, 180))
   const data = await res.json()
-  return data?.choices?.[0]?.message?.content || '(sin respuesta)'
+  const msg = data?.choices?.[0]?.message
+  const reply = (msg?.content || '').trim() || (msg?.reasoning || '').trim()
+  return reply || '(sin respuesta)'
 }
