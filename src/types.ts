@@ -7,6 +7,8 @@ export interface Message {
   role: Role
   content: string
   status?: 'sending' | 'done' | 'error'
+  fileName?: string
+  display?: string
 }
 
 export interface Conversation {

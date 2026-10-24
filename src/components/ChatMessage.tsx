@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, FileText } from 'lucide-react'
 import { MikuAvatar } from './MikuAvatar'
 import { MessageActions } from './MessageActions'
 import type { Message } from '../types'
@@ -51,7 +51,12 @@ export function ChatMessage({
         className="flex justify-end"
       >
         <div className="max-w-[76%] rounded-2xl rounded-br-md border border-line/70 bg-panel2/80 px-4 py-2.5 text-[15px] leading-relaxed text-soft">
-          {message.content}
+          {message.fileName && (
+            <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-lg bg-bg/40 px-2 py-1 text-xs text-miku">
+              <FileText size={13} /> {message.fileName}
+            </div>
+          )}
+          {(message.display ?? message.content) && <div>{message.display ?? message.content}</div>}
         </div>
       </motion.div>
     )

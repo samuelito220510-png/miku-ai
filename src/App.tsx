@@ -153,17 +153,26 @@ export default function App() {
 
   // Envío normal (texto o micrófono del compositor)
   const send = useCallback(
-    async (raw: string) => {
+    async (raw: string, file?: { name: string; content: string }) => {
       const text = raw.trim()
-      if (!text || thinking) return
-      const userMsg: Message = { id: uid(), role: 'user', content: text }
+      if ((!text && !file) || thinking) return
+      const fileText = file ? file.content.slice(0, 8000) : ''
+      const llmText = file ? `${text}\n\n[Archivo adjunto "${file.name}"]:\n${fileText}` : text
+      const userMsg: Message = {
+        id: uid(),
+        role: 'user',
+        content: llmText,
+        display: file ? text : undefined,
+        fileName: file?.name,
+      }
       const existing = activeId ? chats.find((c) => c.id === activeId) : undefined
       const prevMessages = existing?.messages ?? []
       let convId = activeId
+      const titleSrc = text || file?.name || 'Nuevo chat'
       if (!existing) {
         convId = uid()
         setChats((prev) => [
-          { id: convId as string, title: text.length > 42 ? text.slice(0, 42) + '…' : text, createdAt: Date.now(), messages: [userMsg] },
+          { id: convId as string, title: titleSrc.length > 42 ? titleSrc.slice(0, 42) + '…' : titleSrc, createdAt: Date.now(), messages: [userMsg] },
           ...prev,
         ])
       } else {
@@ -172,7 +181,7 @@ export default function App() {
       setActiveId(convId)
       setThinking(true)
       try {
-        const reply = await askMiku(`${BASE_SYSTEM} ${activePersonality.systemPrompt}`, prevMessages.slice(-20), text)
+        const reply = await askMiku(`${BASE_SYSTEM} ${activePersonality.systemPrompt}`, prevMessages.slice(-20), llmText)
         appendTo(convId as string, { id: uid(), role: 'assistant', content: reply, status: 'done' })
         setThinking(false)
         speak(reply)
