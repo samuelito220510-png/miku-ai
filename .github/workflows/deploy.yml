@@ -26,6 +26,7 @@ jobs:
       - run: npm run build
         env:
           VITE_GROQ_KEY: ${{ secrets.GROQ_KEY }}
+          VITE_DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
